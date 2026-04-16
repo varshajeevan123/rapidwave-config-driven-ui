@@ -396,11 +396,9 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
             colorScheme: const ColorScheme.dark(primary: Colors.cyanAccent),
           ),
           child: DynamicForm(
-            fields: List<String>.from(
-              formData['fields'] ?? ['email', 'password'],
-            ),
-            labels: {'email': 'Email Address', 'password': 'Password'},
+            fields: formData['fields'] ?? [],
             submitLabel: formData['submit_label'] ?? 'Login',
+            validationMode: formData['validation_mode'] ?? 'onUserInteraction',
             onSubmit: () => context.go('/dashboard'),
             isLiquidButton: true,
           ),
@@ -452,15 +450,9 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
           child: Column(
             children: [
               DynamicForm(
-                fields: List<String>.from(
-                  formData['fields'] ?? ['name', 'email', 'password'],
-                ),
-                labels: {
-                  'name': 'Full Name',
-                  'email': 'Email Address',
-                  'password': 'Password',
-                },
+                fields: formData['fields'] ?? [],
                 submitLabel: formData['submit_label'] ?? 'Register',
+                validationMode: formData['validation_mode'] ?? 'onUserInteraction',
                 onSubmit: () {
                   toggleMode();
                   ScaffoldMessenger.of(context).showSnackBar(

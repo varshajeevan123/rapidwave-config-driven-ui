@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import '../../templates/business/widgets/business_widgets.dart';
 
 class DynamicForm extends StatefulWidget {
-  final List<String> fields;
+  final List<dynamic> fields;
   final String submitLabel;
   final VoidCallback onSubmit;
-  final Map<String, String> labels;
-  final Map<String, String> hints;
   final bool isLiquidButton;
 
   const DynamicForm({
@@ -14,10 +12,11 @@ class DynamicForm extends StatefulWidget {
     required this.fields,
     required this.onSubmit,
     this.submitLabel = 'Submit',
-    this.labels = const {},
-    this.hints = const {},
     this.isLiquidButton = false,
+    this.validationMode = 'onUserInteraction',
   });
+
+  final String validationMode;
 
   @override
   State<DynamicForm> createState() => _DynamicFormState();
@@ -26,12 +25,18 @@ class DynamicForm extends StatefulWidget {
 class _DynamicFormState extends State<DynamicForm> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, TextEditingController> _controllers = {};
+  final Map<String, bool> _isPasswordVisible = {};
 
   @override
   void initState() {
     super.initState();
     for (var field in widget.fields) {
-      _controllers[field] = TextEditingController();
+      final name = field['name'] as String;
+      final type = field['type'] as String? ?? 'text';
+      _controllers[name] = TextEditingController();
+      if (type == 'password') {
+        _isPasswordVisible[name] = false;
+      }
     }
   }
 
@@ -43,6 +48,77 @@ class _DynamicFormState extends State<DynamicForm> {
     super.dispose();
   }
 
+  FormFieldValidator<String> _buildValidator(Map<String, dynamic> field) {
+    final validations = field['validations'] as List<dynamic>? ?? [];
+    
+    return (value) {
+      for (var v in validations) {
+        final rule = v['rule'] as String;
+        final message = v['message'] as String;
+
+        if (rule == 'required') {
+          if (value == null || value.isEmpty) return message;
+        } else if (rule == 'email') {
+          if (value != null && value.isNotEmpty) {
+            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+            if (!emailRegex.hasMatch(value)) return message;
+          }
+        } else if (rule == 'min_length') {
+          final length = v['value'] as int;
+          if (value != null && value.length < length) return message;
+        } else if (rule == 'max_length') {
+          final length = v['value'] as int;
+          if (value != null && value.length > length) return message;
+        } else if (rule == 'match') {
+          final targetField = v['field'] as String;
+          final targetValue = _controllers[targetField]?.text;
+          if (value != targetValue) return message;
+        }
+      }
+      return null;
+    };
+  }
+
+  TextInputType _getKeyboardType(String type) {
+    switch (type) {
+      case 'email':
+        return TextInputType.emailAddress;
+      case 'number':
+        return TextInputType.number;
+      case 'phone':
+        return TextInputType.phone;
+      case 'password':
+        return TextInputType.visiblePassword;
+      default:
+        return TextInputType.text;
+    }
+  }
+
+  IconData _getPrefixIcon(String type) {
+    switch (type) {
+      case 'email':
+        return Icons.email_outlined;
+      case 'password':
+        return Icons.lock_outline;
+      case 'text':
+      default:
+        if (type.contains('name')) return Icons.person_outline;
+        return Icons.edit_outlined;
+    }
+  }
+
+  AutovalidateMode _getAutovalidateMode(String mode) {
+    switch (mode) {
+      case 'always':
+        return AutovalidateMode.always;
+      case 'disabled':
+        return AutovalidateMode.disabled;
+      case 'onUserInteraction':
+      default:
+        return AutovalidateMode.onUserInteraction;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -50,15 +126,42 @@ class _DynamicFormState extends State<DynamicForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ...widget.fields.map((field) {
-            final isObscure = field.toLowerCase().contains('password');
-            final isEmail = field.toLowerCase().contains('email');
-            final isName = field.toLowerCase().contains('name');
+          ...widget.fields.where((f) => f['isVisible'] ?? true).map((field) {
+            final name = field['name'] as String;
+            final label = field['label'] as String;
+            final hint = field['hint'] as String?;
+            final type = field['type'] as String? ?? 'text';
+            final isReadOnly = field['isReadOnly'] as bool? ?? false;
+            final isPasswordField = type == 'password';
+            
+            // Password visibility state
+            final bool showPassword = _isPasswordVisible[name] ?? false;
+            final bool obscureText = isPasswordField && !showPassword;
+            
+            final prefixIcon = _getPrefixIcon(type);
 
-            IconData prefixIcon = Icons.edit_outlined;
-            if (isObscure) prefixIcon = Icons.lock_outline;
-            if (isEmail) prefixIcon = Icons.email_outlined;
-            if (isName) prefixIcon = Icons.person_outline;
+            // Suffix icon logic
+            Widget? suffixIcon;
+            if (isReadOnly) {
+              suffixIcon = Icon(
+                Icons.lock_outline,
+                size: 18,
+                color: Colors.cyanAccent.withOpacity(0.5),
+              );
+            } else if (isPasswordField) {
+              suffixIcon = IconButton(
+                icon: Icon(
+                  showPassword ? Icons.visibility : Icons.visibility_off,
+                  size: 18,
+                  color: Colors.cyanAccent.withAlpha(150),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible[name] = !showPassword;
+                  });
+                },
+              );
+            }
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
@@ -68,7 +171,7 @@ class _DynamicFormState extends State<DynamicForm> {
                   Row(
                     children: [
                       Text(
-                        widget.labels[field] ?? field,
+                        label,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
@@ -89,14 +192,17 @@ class _DynamicFormState extends State<DynamicForm> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
-                    controller: _controllers[field],
-                    obscureText: isObscure,
+                    controller: _controllers[name],
+                    obscureText: obscureText,
+                    readOnly: isReadOnly,
+                    autovalidateMode: _getAutovalidateMode(widget.validationMode),
+                    keyboardType: _getKeyboardType(type),
                     style: TextStyle(
                       fontSize: 14,
                       color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                     decoration: InputDecoration(
-                      hintText: widget.hints[field],
+                      hintText: hint,
                       hintStyle: TextStyle(
                         color: Theme.of(
                           context,
@@ -153,17 +259,13 @@ class _DynamicFormState extends State<DynamicForm> {
                           width: 2,
                         ),
                       ),
+                      suffixIcon: suffixIcon,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 0,
                         vertical: 18,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'This field is required';
-                      }
-                      return null;
-                    },
+                    validator: _buildValidator(field),
                   ),
                 ],
               ),

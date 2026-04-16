@@ -15,26 +15,117 @@
     "login_form": {
       "title": "Sign In",
       "submit_label": "Sign In",
-      "email_hint": "Email",
-      "email_label": "Email Address",
-      "password_label": "Password",
+      "validation_mode": "onUserInteraction",
       "fields": [
-        "email",
-        "password"
+        {
+          "name": "email",
+          "type": "email",
+          "label": "Email Address",
+          "hint": "Enter your email",
+          "isReadOnly": false,
+          "isVisible": true,
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Email is required"
+            },
+            {
+              "rule": "email",
+              "message": "Enter a valid email address"
+            }
+          ]
+        },
+        {
+          "name": "password",
+          "type": "password",
+          "label": "Password",
+          "hint": "Enter your password",
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Password is required"
+            },
+            {
+              "rule": "min_length",
+              "value": 8,
+              "message": "Minimum 8 characters"
+            }
+          ]
+        }
       ]
     },
     "signup_form": {
       "title": "Create Account",
       "submit_label": "Sign Up",
-      "email_hint": "Email",
-      "email_label": "Email Address",
-      "password_label": "Password",
-      "name_label": "Full Name",
-      "name_hint": "Name",
+      "validation_mode": "onUserInteraction",
       "fields": [
-        "name",
-        "email",
-        "password"
+        {
+          "name": "name",
+          "type": "text",
+          "label": "Full Name",
+          "hint": "Enter your full name",
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Name is required"
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "label": "Email Address",
+          "hint": "Enter your email",
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Email is required"
+            },
+            {
+              "rule": "email",
+              "message": "Enter a valid email"
+            }
+          ]
+        },
+        {
+          "name": "password",
+          "type": "password",
+          "label": "Password",
+          "hint": "Create a secure password",
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Password is required"
+            },
+            {
+              "rule": "min_length",
+              "value": 8,
+              "message": "At least 8 characters"
+            }
+          ]
+        },
+        {
+          "name": "confirm_password",
+          "type": "password",
+          "label": "Confirm Password",
+          "hint": "Confirm your password",
+          "validations": [
+            {
+              "rule": "required",
+              "message": "Password is required"
+            },
+            {
+              "rule": "min_length",
+              "value": 8,
+              "message": "At least 8 characters"
+            },
+            {
+              "rule": "match",
+              "field": "password",
+              "message": "Passwords do not match"
+            }
+          ]
+        }
       ]
     }
   }
