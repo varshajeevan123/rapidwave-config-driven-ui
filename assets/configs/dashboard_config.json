@@ -1,0 +1,21 @@
+{
+  "screen_id": "dashboard",
+  "data": {
+    "project_name": "RapidWave",
+    "page_title": "Platform Overview",
+    "metrics": [
+      {
+        "title": "Total Users",
+        "value": "12,345"
+      },
+      {
+        "title": "Active Sessions",
+        "value": "1,043"
+      },
+      {
+        "title": "Revenue",
+        "value": "$45,200"
+      }
+    ]
+  }
+}

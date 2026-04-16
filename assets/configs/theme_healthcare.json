@@ -1,0 +1,23 @@
+{
+  "lightColors": {
+    "primary": "#00A86B",
+    "secondary": "#4FB9AF",
+    "background": "#F0FDF4",
+    "surface": "#FFFFFF",
+    "textPrimary": "#064E3B",
+    "textSecondary": "#34D399",
+    "error": "#EF4444"
+  },
+  "darkColors": {
+    "primary": "#10B981",
+    "secondary": "#2DD4BF",
+    "background": "#022C22",
+    "surface": "#064E3B",
+    "textPrimary": "#ECFDF5",
+    "textSecondary": "#A7F3D0",
+    "error": "#F87171"
+  },
+  "fontFamily": "Outfit",
+  "defaultBorderRadius": 24.0,
+  "defaultSpacing": 20.0
+}

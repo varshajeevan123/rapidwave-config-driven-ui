@@ -1,0 +1,41 @@
+{
+  "screen_id": "login",
+  "data": {
+    "project_name": "RapidWave",
+    "bg_image": "assets/images/business_template_icons/bg_image.jpg",
+    "platform_greeting": "Hello, Welcome To the RapidWave business platform",
+    "welcome_card_login": {
+      "title": "Welcome Back!",
+      "subtitle": "If you already have an account"
+    },
+    "welcome_card_signup": {
+      "title": "Join Us Today!",
+      "subtitle": "Don't already have an account?"
+    },
+    "login_form": {
+      "title": "Sign In",
+      "submit_label": "Sign In",
+      "email_hint": "Email",
+      "email_label": "Email Address",
+      "password_label": "Password",
+      "fields": [
+        "email",
+        "password"
+      ]
+    },
+    "signup_form": {
+      "title": "Create Account",
+      "submit_label": "Sign Up",
+      "email_hint": "Email",
+      "email_label": "Email Address",
+      "password_label": "Password",
+      "name_label": "Full Name",
+      "name_hint": "Name",
+      "fields": [
+        "name",
+        "email",
+        "password"
+      ]
+    }
+  }
+}
