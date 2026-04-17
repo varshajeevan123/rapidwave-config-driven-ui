@@ -1,15 +1,14 @@
 # RapidWeave - Config-Driven App Builder
 
-RapidWeave is a scalable, dynamic config-driven Flutter application. It allows you to build completely dynamic UIs from JSON configurations without writing hardcoded views. With support for flexible themes (like Healthcare, Business, etc.) and adaptive layouts, RapidWeave is inherently pixel-perfect across Web, Tablet, and Mobile.
+RapidWeave is a professional, template-first, config-driven Flutter application. It separates architectural "Brand Identities" (Native Templates) from dynamic content and style overrides (JSON), allowing for pixel-perfect, highly maintainable apps that scale across Web, Tablet, and Mobile.
 
 ---
 
-## 🎯 Key Features
-- **Clean Architecture:** Strict separation of data, domain models, and presentation.
-- **Config-Driven UIs:** Describe entire screens via JSON.
-- **Dynamic RenderEngine:** Renders abstract config properties into physical widgets (`DynamicCard`, `DynamicForm`, `DynamicLayout`).
-- **Runtime Theme engine:** Switch layouts and color schemes on the fly automatically based on the user's template.
-- **Fully Responsive:** Gracefully scales components and handles stacked/grid layouts based on screen dimensions.
+## 🎯 Key Architecture
+RapidWeave follows a **Hybrid-Dynamic Architecture**:
+- **Hardcoded Soul (Templates):** Each template (Healthcare, Business) defines its signature aesthetic (curves, specific semantic colors, custom design tokens) in native code for maximum performance and "premium" feel.
+- **Dynamic Skin (JSON Overrides):** Any brand property defined in assets can precisely override the template's defaults at runtime.
+- **Config-Driven Logic:** Screen structures, form fields, and validation rules are entirely defined in JSON.
 
 ---
 
@@ -17,92 +16,85 @@ RapidWeave is a scalable, dynamic config-driven Flutter application. It allows y
 
 ```text
 lib/
-├── config/                  # Global Configuration loaders
 ├── core/
-│   ├── network/             # Generic Dio ApiService
-│   ├── providers/           # Global Riverpod state Notifiers (Theme/Template)
-│   ├── routes/              # GoRouter definitions
-│   └── theme/               # ThemeEngine logic for parsing JSON themes
+│   ├── providers/           # AppState, ThemeMode, and Template state
+│   ├── theme/               # ThemeEngine (Material 3) & ThemeExtensions
 ├── data/
-│   └── repositories/        # Connects models to FileSystem (loads JSON) or APIs
+│   └── repositories/        # Loading JSON from assets/local storage
 ├── domain/
-│   └── models/              # Immutable config models (ScreenConfig, ThemeConfig)
-├── features/
-│   └── dynamic_screen/      # Core renderer screen (DynamicPage) orchestrator
-└── shared/
-    └── widgets/             # Library of smart reusable dynamic components
+│   └── models/              # Immutable configs (ScreenConfig, ThemeConfig)
+├── templates/               # Native Template definitions (Registry/Factory)
+│   ├── healthcare/          # Specialized UI (MedicalAuthScreen, Hexagons)
+│   ├── business/            # Specialized UI (BusinessAuthScreen, Liquid UI)
+│   └── registry/            # Abstract contract for Templates
+├── shared/
+│   └── widgets/             # Reusable dynamic components (DynamicForm, LiquidButtons)
+└── main.dart                # Application entry and ProviderScope
 ```
 
 ---
 
-## 🎨 How Configurations & Templates Work
+## 🎨 Design System & Workflow
 
-RapidWeave uses JSON documents placed inside `assets/configs/` to map out your application.
+The system uses a **Top-Down Merging Strategy**:
+1. **Template Base**: The `TemplateFactory` provides the default `ThemeConfig` and `ThemeExtension` (e.g., glassmorphism tokens).
+2. **JSON Override**: The `ConfigRepository` looks for `assets/configs/theme_{templateId}.json`.
+3. **Merge**: The `app_state_provider` deep-merges the JSON values over the template defaults.
+4. **Engine**: The `ThemeEngine` generates a cohesive `ThemeData` including semantic colors (Success, Info, Warning).
 
 ### 1. Adjusting Theme/Brand Colors
-To modify styling, locate the `theme_[name].json` file. 
+To modify styling for a specific template, edit:
 *Example: `assets/configs/theme_healthcare.json`*
 
-You can change:
-- **`lightColors`** / **`darkColors`**: Modify `primary`, `background`, `surface`, etc., using hex codes.
-- **`fontFamily`**: RapidWeave automatically pulls fonts dynamically via Google Fonts (e.g., `"Inter"`, `"Outfit"`, `"Roboto"`).
-- **`defaultSpacing`** & **`defaultBorderRadius`**: Defines global padding and corner roundness.
-
-### 2. Modifying Screen Layouts
-To change the structure of a page (e.g., Dashboard or Login), edit its corresponding JSON file.
-*Example: `assets/configs/dashboard_config.json`*
-
-#### Understanding `DynamicLayout`:
-- **`type: "layout"`**: Use this component to group items.
-- **`strategy`**: Set to `"adaptive"`, `"column"`, `"row"`, or `"grid"`.
-- **`stackedOnMobile`: true**: Automatically stacks content in a column when running on a mobile screen if using row/grid strategies.
-
-#### Example Component:
 ```json
 {
-  "type": "card",
-  "properties": {
-    "title": "Total Users",
-    "value": "12,345",
-    "style": "elevated"  // Can also be "solid" or "glass" (for glassmorphism UI)
-  }
+  "lightColors": {
+    "primary": "#00796B",
+    "background": "#F1F8F7",
+    "textPrimary": "#1B2F2A"
+  },
+  "defaultBorderRadius": 20.0
 }
 ```
 
+### 2. Modifying Screen Layouts & Forms
+Screens are described in functional JSON files. 
+*Example: `assets/configs/login_config.json`*
+
+Forms are handled by the `DynamicForm` widget, which supports:
+- **Field Types**: `email`, `password`, `text`, `phone`.
+- **Validation Rules**: `required`, `email`, `min_length`, `match` (for password confirmation).
+- **Responsive Logic**: Spacing, sizing, and visibility toggles are adapted per template.
+
 ---
 
-## 🚀 Adding New UIs or Features
+## 🚀 Development Workflow
 
-### Adding a new Screen
-1. Create a new config file in `assets/configs/` (e.g. `assets/configs/profile_config.json`).
-2. Set the root ID equal to the filename (e.g. `"id": "profile"`).
-3. If it requires navigation, add a route in `lib/core/routes/app_router.dart`:
-   ```dart
-   GoRoute(
-     path: '/profile',
-     builder: (context, state) => const DynamicPage(screenId: 'profile'),
-   ),
-   ```
+### Adding a New Template
+1. Create a folder in `lib/templates/[new_template]`.
+2. Implement the `TemplateRegistry` interface.
+3. Define its **Brand Identity** (colors, typography, corners) in its `getThemeConfig()` implementation.
+4. Register it in the `TemplateFactory`.
 
-### Creating & Mapping a New Custom Component
-To expand the app builder's capability (e.g., adding a Video Player component):
-1. Build the widget in `lib/shared/widgets/dynamic_video.dart`.
-2. Open `lib/shared/widgets/dynamic_renderer.dart`.
-3. Add a new `case 'video':` in the core switch expression.
-4. Pass the properties via the config definitions to the newly attached widget!
+### Expanding the Design System
+1. Add new semantic tokens to `ThemeColors` in `lib/domain/models/theme_config.dart`.
+2. Map them to `ColorScheme` in `lib/core/theme/theme_engine.dart`.
+3. (Optional) Add unique "Signature Tokens" (e.g. `brandAccent`) to `TemplateColors` extension in `lib/core/theme/template_theme_extension.dart`.
 
 ---
 
 ## 🏃 Running the Application
 
-Ensure Flutter dependencies are installed correctly.
+1. **Setup**: `flutter pub get`
+2. **Launch**: `flutter run -d chrome` (Recommended for testing responsive scaling)
+3. **Template Discovery**: Use the `activeTemplateProvider` in the UI to switch between Healthcare and Business themes live.
 
-1. Fetch modules:
-   ```bash
-   flutter pub get
-   ```
-2. Run on Web (Recommended for Testing Adaptive Resizing):
-   ```bash
-   flutter run -d chrome
-   ```
-3. Runtime testing: In the app's top app-bar, utilize the `Theme/Dark Mode` toggle to see live configuration switches without reloading!
+---
+
+## 🛠 Tech Stack
+- **Framework:** Flutter 3.x
+- **State Management:** Riverpod 2.x
+- **Animation:** flutter_animate
+- **Theming:** Material 3 + ThemeExtensions
+- **Routing:** GoRouter
+- **Typography:** Google Fonts

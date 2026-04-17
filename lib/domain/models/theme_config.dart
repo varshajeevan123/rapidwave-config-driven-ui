@@ -15,6 +15,33 @@ class ThemeConfig {
     this.defaultSpacing = 16.0,
   });
 
+  ThemeConfig copyWith({
+    ThemeColors? lightColors,
+    ThemeColors? darkColors,
+    String? fontFamily,
+    double? defaultBorderRadius,
+    double? defaultSpacing,
+  }) {
+    return ThemeConfig(
+      lightColors: lightColors ?? this.lightColors,
+      darkColors: darkColors ?? this.darkColors,
+      fontFamily: fontFamily ?? this.fontFamily,
+      defaultBorderRadius: defaultBorderRadius ?? this.defaultBorderRadius,
+      defaultSpacing: defaultSpacing ?? this.defaultSpacing,
+    );
+  }
+
+  ThemeConfig merge(ThemeConfig? other) {
+    if (other == null) return this;
+    return ThemeConfig(
+      lightColors: lightColors.merge(other.lightColors),
+      darkColors: darkColors.merge(other.darkColors),
+      fontFamily: other.fontFamily != 'Inter' ? other.fontFamily : fontFamily,
+      defaultBorderRadius: other.defaultBorderRadius != 12.0 ? other.defaultBorderRadius : defaultBorderRadius,
+      defaultSpacing: other.defaultSpacing != 16.0 ? other.defaultSpacing : defaultSpacing,
+    );
+  }
+
   factory ThemeConfig.fromJson(Map<String, dynamic> json) {
     return ThemeConfig(
       lightColors: ThemeColors.fromJson(json['lightColors'] ?? {}),
@@ -27,42 +54,72 @@ class ThemeConfig {
 }
 
 class ThemeColors {
-  final Color primary;
-  final Color secondary;
-  final Color background;
-  final Color surface;
-  final Color textPrimary;
-  final Color textSecondary;
-  final Color error;
+  final Color? primary;
+  final Color? secondary;
+  final Color? tertiary;
+  final Color? background;
+  final Color? surface;
+  final Color? textPrimary;
+  final Color? textSecondary;
+  final Color? error;
+  final Color? success;
+  final Color? warning;
+  final Color? info;
 
   ThemeColors({
-    required this.primary,
-    required this.secondary,
-    required this.background,
-    required this.surface,
-    required this.textPrimary,
-    required this.textSecondary,
-    required this.error,
+    this.primary,
+    this.secondary,
+    this.tertiary,
+    this.background,
+    this.surface,
+    this.textPrimary,
+    this.textSecondary,
+    this.error,
+    this.success,
+    this.warning,
+    this.info,
   });
 
-  factory ThemeColors.fromJson(Map<String, dynamic> json) {
+  ThemeColors merge(ThemeColors? other) {
+    if (other == null) return this;
     return ThemeColors(
-      primary: _parseColor(json['primary'] as String?, const Color(0xFF6200EE)),
-      secondary: _parseColor(json['secondary'] as String?, const Color(0xFF03DAC6)),
-      background: _parseColor(json['background'] as String?, const Color(0xFFF6F6F9)),
-      surface: _parseColor(json['surface'] as String?, const Color(0xFFFFFFFF)),
-      textPrimary: _parseColor(json['textPrimary'] as String?, const Color(0xFF1E1E1E)),
-      textSecondary: _parseColor(json['textSecondary'] as String?, const Color(0xFF757575)),
-      error: _parseColor(json['error'] as String?, const Color(0xFFB00020)),
+      primary: other.primary ?? primary,
+      secondary: other.secondary ?? secondary,
+      tertiary: other.tertiary ?? tertiary,
+      background: other.background ?? background,
+      surface: other.surface ?? surface,
+      textPrimary: other.textPrimary ?? textPrimary,
+      textSecondary: other.textSecondary ?? textSecondary,
+      error: other.error ?? error,
+      success: other.success ?? success,
+      warning: other.warning ?? warning,
+      info: other.info ?? info,
     );
   }
 
-  static Color _parseColor(String? hex, Color defaultColor) {
-    if (hex == null || hex.isEmpty) return defaultColor;
+  factory ThemeColors.fromJson(Map<String, dynamic> json) {
+    return ThemeColors(
+      primary: _parseColor(json['primary'] as String?),
+      secondary: _parseColor(json['secondary'] as String?),
+      tertiary: _parseColor(json['tertiary'] as String?),
+      background: _parseColor(json['background'] as String?),
+      surface: _parseColor(json['surface'] as String?),
+      textPrimary: _parseColor(json['textPrimary'] as String?),
+      textSecondary: _parseColor(json['textSecondary'] as String?),
+      error: _parseColor(json['error'] as String?),
+      success: _parseColor(json['success'] as String?),
+      warning: _parseColor(json['warning'] as String?),
+      info: _parseColor(json['info'] as String?),
+    );
+  }
+
+  static Color? _parseColor(String? hex) {
+    if (hex == null || hex.isEmpty) return null;
     hex = hex.replaceAll('#', '');
     if (hex.length == 6) {
       hex = 'FF$hex';
     }
-    return Color(int.tryParse(hex, radix: 16) ?? defaultColor.value);
+    return Color(int.tryParse(hex, radix: 16) ?? 0);
   }
 }
+

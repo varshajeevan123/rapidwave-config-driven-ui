@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/models/theme_config.dart';
+import 'template_theme_extension.dart';
 
 class ThemeEngine {
   static ThemeData createTheme({
     required ThemeConfig config,
     required bool isDarkMode,
+    ThemeExtension? extension,
   }) {
     final colors = isDarkMode ? config.darkColors : config.lightColors;
 
+    // Default Fallbacks
+    final primary = colors.primary ?? (isDarkMode ? const Color(0xFFBB86FC) : const Color(0xFF6200EE));
+    final secondary = colors.secondary ?? const Color(0xFF03DAC6);
+    final background = colors.background ?? (isDarkMode ? const Color(0xFF121212) : const Color(0xFFF6F6F9));
+    final surface = colors.surface ?? (isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF));
+    final error = colors.error ?? const Color(0xFFB00020);
+    final textPrimary = colors.textPrimary ?? (isDarkMode ? Colors.white : const Color(0xFF1E1E1E));
+    final textSecondary = colors.textSecondary ?? (isDarkMode ? Colors.white70 : const Color(0xFF757575));
+
     final colorScheme = ColorScheme(
       brightness: isDarkMode ? Brightness.dark : Brightness.light,
-      primary: colors.primary,
-      onPrimary: colors.surface,
-      secondary: colors.secondary,
-      onSecondary: colors.textPrimary,
-      error: colors.error,
-      onError: colors.surface,
-      surface: colors.surface,
-      onSurface: colors.textPrimary,
+      primary: primary,
+      onPrimary: _getContrastColor(primary),
+      secondary: secondary,
+      onSecondary: _getContrastColor(secondary),
+      tertiary: colors.tertiary,
+      error: error,
+      onError: Colors.white,
+      surface: surface,
+      onSurface: textPrimary,
+      surfaceContainerHighest: colors.surface?.withAlpha(20) ?? (isDarkMode ? Colors.white10 : Colors.black12),
     );
 
     // Dynamic font family using Google Fonts
@@ -26,25 +39,28 @@ class ThemeEngine {
       config.fontFamily,
       ThemeData(brightness: colorScheme.brightness).textTheme,
     ).copyWith(
-      bodyLarge: TextStyle(color: colors.textPrimary),
-      bodyMedium: TextStyle(color: colors.textSecondary),
-      displayLarge: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(color: textPrimary),
+      bodyMedium: TextStyle(color: textSecondary),
+      displayLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
     );
 
     return ThemeData(
+      useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: colors.background,
+      scaffoldBackgroundColor: background,
       textTheme: textTheme,
+      extensions: extension != null ? [extension] : [],
       cardTheme: CardThemeData(
-        color: colors.surface,
+        color: surface,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(config.defaultBorderRadius),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colors.surface,
+        fillColor: surface,
         contentPadding: EdgeInsets.all(config.defaultSpacing),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(config.defaultBorderRadius),
@@ -52,17 +68,17 @@ class ThemeEngine {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(config.defaultBorderRadius),
-          borderSide: BorderSide(color: colors.textSecondary.withAlpha(51)), // 0.2 alpha (51/255)
+          borderSide: BorderSide(color: textSecondary.withAlpha(51)), 
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(config.defaultBorderRadius),
-          borderSide: BorderSide(color: colors.primary),
+          borderSide: BorderSide(color: primary, width: 2),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colors.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: primary,
+          foregroundColor: _getContrastColor(primary),
           padding: EdgeInsets.symmetric(
             vertical: config.defaultSpacing,
             horizontal: config.defaultSpacing * 2,
@@ -75,4 +91,11 @@ class ThemeEngine {
       ),
     );
   }
+
+  static Color _getContrastColor(Color color) {
+    return ThemeData.estimateBrightnessForColor(color) == Brightness.dark 
+        ? Colors.white 
+        : Colors.black;
+  }
 }
+

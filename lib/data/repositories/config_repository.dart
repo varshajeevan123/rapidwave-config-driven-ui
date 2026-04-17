@@ -4,10 +4,15 @@ import '../../domain/models/ui_config.dart';
 import '../../domain/models/theme_config.dart';
 
 class ConfigRepository {
-  Future<ThemeConfig> loadThemeConfig(String templateId) async {
-    final jsonStr = await rootBundle.loadString('assets/configs/theme_$templateId.json');
-    final map = json.decode(jsonStr) as Map<String, dynamic>;
-    return ThemeConfig.fromJson(map);
+  Future<ThemeConfig?> getThemeOverrides(String templateId) async {
+    try {
+      final jsonStr = await rootBundle.loadString('assets/configs/theme_$templateId.json');
+      final map = json.decode(jsonStr) as Map<String, dynamic>;
+      return ThemeConfig.fromJson(map);
+    } catch (e) {
+      // Return null if no override file exists
+      return null;
+    }
   }
 
   Future<ScreenConfig> loadScreenConfig(String screenId) async {
@@ -16,3 +21,4 @@ class ConfigRepository {
     return ScreenConfig.fromJson(map);
   }
 }
+

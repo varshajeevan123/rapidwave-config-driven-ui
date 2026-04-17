@@ -14,9 +14,11 @@ class DynamicForm extends StatefulWidget {
     this.submitLabel = 'Submit',
     this.isLiquidButton = false,
     this.validationMode = 'onUserInteraction',
+    this.templateType = 'business',
   });
 
   final String validationMode;
+  final String templateType;
 
   @override
   State<DynamicForm> createState() => _DynamicFormState();
@@ -121,6 +123,13 @@ class _DynamicFormState extends State<DynamicForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isMedical = widget.templateType == 'healthcare';
+    final primaryColor = colorScheme.primary;
+    final labelSize = isMedical ? 15.0 : 13.0;
+    final textSize = isMedical ? 16.0 : 14.0;
+
     return Form(
       key: _formKey,
       child: Column(
@@ -146,14 +155,14 @@ class _DynamicFormState extends State<DynamicForm> {
               suffixIcon = Icon(
                 Icons.lock_outline,
                 size: 18,
-                color: Colors.cyanAccent.withOpacity(0.5),
+                color: colorScheme.secondary.withOpacity(0.5),
               );
             } else if (isPasswordField) {
               suffixIcon = IconButton(
                 icon: Icon(
                   showPassword ? Icons.visibility : Icons.visibility_off,
                   size: 18,
-                  color: Colors.cyanAccent.withAlpha(150),
+                  color: primaryColor.withAlpha(150),
                 ),
                 onPressed: () {
                   setState(() {
@@ -164,7 +173,7 @@ class _DynamicFormState extends State<DynamicForm> {
             }
 
             return Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
+              padding: EdgeInsets.only(bottom: isMedical ? 24.0 : 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -173,11 +182,11 @@ class _DynamicFormState extends State<DynamicForm> {
                       Text(
                         label,
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.color?.withAlpha(200),
+                          fontWeight: FontWeight.w700,
+                          fontSize: labelSize,
+                          color: isMedical 
+                            ? (colorScheme.onSurface)
+                            : theme.textTheme.bodyMedium?.color?.withAlpha(200),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -198,16 +207,16 @@ class _DynamicFormState extends State<DynamicForm> {
                     autovalidateMode: _getAutovalidateMode(widget.validationMode),
                     keyboardType: _getKeyboardType(type),
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                      fontSize: textSize,
+                      color: isMedical ? colorScheme.onSurface : theme.textTheme.bodyLarge?.color,
                     ),
                     decoration: InputDecoration(
                       hintText: hint,
                       hintStyle: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withAlpha(100),
-                        fontSize: 13,
+                        color: isMedical 
+                          ? Colors.grey.withAlpha(150)
+                          : theme.textTheme.bodySmall?.color?.withAlpha(100),
+                        fontSize: labelSize,
                       ),
                       prefixIcon: IntrinsicHeight(
                         child: Row(
@@ -216,14 +225,14 @@ class _DynamicFormState extends State<DynamicForm> {
                             const SizedBox(width: 16),
                             Icon(
                               prefixIcon,
-                              color: Colors.cyanAccent.withAlpha(180),
+                              color: primaryColor.withAlpha(180),
                               size: 20,
                             ),
                             const SizedBox(width: 12),
                             VerticalDivider(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withAlpha(30),
+                              color: isMedical 
+                                ? primaryColor.withAlpha(50)
+                                : colorScheme.onSurface.withAlpha(30),
                               thickness: 1,
                               indent: 12,
                               endIndent: 12,
@@ -233,29 +242,29 @@ class _DynamicFormState extends State<DynamicForm> {
                         ),
                       ),
                       filled: true,
-                      fillColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(10),
+                      fillColor: isMedical 
+                        ? Colors.white.withOpacity(0.9)
+                        : colorScheme.onSurface.withAlpha(10),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
                         borderSide: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withAlpha(30),
+                          color: isMedical 
+                            ? primaryColor.withAlpha(80)
+                            : colorScheme.onSurface.withAlpha(30),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
                         borderSide: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withAlpha(30),
+                          color: isMedical 
+                            ? primaryColor.withAlpha(80)
+                            : colorScheme.onSurface.withAlpha(30),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
                         borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: primaryColor,
                           width: 2,
                         ),
                       ),
@@ -281,6 +290,7 @@ class _DynamicFormState extends State<DynamicForm> {
                     }
                   },
                   isLarge: true,
+                  primaryColor: primaryColor,
                 )
               : ElevatedButton(
                   onPressed: () {
@@ -291,12 +301,12 @@ class _DynamicFormState extends State<DynamicForm> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     elevation: 8,
-                    shadowColor: Colors.cyanAccent.withAlpha(100),
+                    shadowColor: primaryColor.withAlpha(100),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    backgroundColor: Colors.cyanAccent,
-                    foregroundColor: const Color(0xFF1E285D),
+                    backgroundColor: primaryColor,
+                    foregroundColor: colorScheme.onPrimary,
                   ),
                   child: Text(
                     widget.submitLabel.toUpperCase(),
@@ -311,4 +321,5 @@ class _DynamicFormState extends State<DynamicForm> {
       ),
     );
   }
+
 }

@@ -17,14 +17,20 @@ class RapidWeaveApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
     final themeConfigAsync = ref.watch(themeConfigProvider);
+    final themeExtension = ref.watch(themeExtensionProvider);
 
     return MaterialApp.router(
       title: 'RapidWeave',
       debugShowCheckedModeBanner: false,
       theme: themeConfigAsync.maybeWhen(
-        data: (config) => ThemeEngine.createTheme(config: config, isDarkMode: themeMode),
+        data: (config) => ThemeEngine.createTheme(
+          config: config, 
+          isDarkMode: themeMode,
+          extension: themeExtension,
+        ),
         orElse: () => ThemeData.light(), // Fallback theme while loading
       ),
+
       routerConfig: router,
       builder: (context, child) {
         return themeConfigAsync.when(
