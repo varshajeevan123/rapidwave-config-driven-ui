@@ -15,10 +15,12 @@ class DynamicForm extends StatefulWidget {
     this.isLiquidButton = false,
     this.validationMode = 'onUserInteraction',
     this.templateType = 'business',
+    this.socialLogins = const [],
   });
 
   final String validationMode;
   final String templateType;
+  final List<String> socialLogins;
 
   @override
   State<DynamicForm> createState() => _DynamicFormState();
@@ -52,7 +54,7 @@ class _DynamicFormState extends State<DynamicForm> {
 
   FormFieldValidator<String> _buildValidator(Map<String, dynamic> field) {
     final validations = field['validations'] as List<dynamic>? ?? [];
-    
+
     return (value) {
       for (var v in validations) {
         final rule = v['rule'] as String;
@@ -142,11 +144,11 @@ class _DynamicFormState extends State<DynamicForm> {
             final type = field['type'] as String? ?? 'text';
             final isReadOnly = field['isReadOnly'] as bool? ?? false;
             final isPasswordField = type == 'password';
-            
+
             // Password visibility state
             final bool showPassword = _isPasswordVisible[name] ?? false;
             final bool obscureText = isPasswordField && !showPassword;
-            
+
             final prefixIcon = _getPrefixIcon(type);
 
             // Suffix icon logic
@@ -184,9 +186,11 @@ class _DynamicFormState extends State<DynamicForm> {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: labelSize,
-                          color: isMedical 
-                            ? (colorScheme.onSurface)
-                            : theme.textTheme.bodyMedium?.color?.withAlpha(200),
+                          color: isMedical
+                              ? (colorScheme.onSurface)
+                              : theme.textTheme.bodyMedium?.color?.withAlpha(
+                                  200,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -204,18 +208,22 @@ class _DynamicFormState extends State<DynamicForm> {
                     controller: _controllers[name],
                     obscureText: obscureText,
                     readOnly: isReadOnly,
-                    autovalidateMode: _getAutovalidateMode(widget.validationMode),
+                    autovalidateMode: _getAutovalidateMode(
+                      widget.validationMode,
+                    ),
                     keyboardType: _getKeyboardType(type),
                     style: TextStyle(
                       fontSize: textSize,
-                      color: isMedical ? colorScheme.onSurface : theme.textTheme.bodyLarge?.color,
+                      color: isMedical
+                          ? colorScheme.onSurface
+                          : theme.textTheme.bodyLarge?.color,
                     ),
                     decoration: InputDecoration(
                       hintText: hint,
                       hintStyle: TextStyle(
-                        color: isMedical 
-                          ? Colors.grey.withAlpha(150)
-                          : theme.textTheme.bodySmall?.color?.withAlpha(100),
+                        color: isMedical
+                            ? Colors.grey.withAlpha(150)
+                            : theme.textTheme.bodySmall?.color?.withAlpha(100),
                         fontSize: labelSize,
                       ),
                       prefixIcon: IntrinsicHeight(
@@ -230,9 +238,9 @@ class _DynamicFormState extends State<DynamicForm> {
                             ),
                             const SizedBox(width: 12),
                             VerticalDivider(
-                              color: isMedical 
-                                ? primaryColor.withAlpha(50)
-                                : colorScheme.onSurface.withAlpha(30),
+                              color: isMedical
+                                  ? primaryColor.withAlpha(50)
+                                  : colorScheme.onSurface.withAlpha(30),
                               thickness: 1,
                               indent: 12,
                               endIndent: 12,
@@ -242,31 +250,34 @@ class _DynamicFormState extends State<DynamicForm> {
                         ),
                       ),
                       filled: true,
-                      fillColor: isMedical 
-                        ? Colors.white.withOpacity(0.9)
-                        : colorScheme.onSurface.withAlpha(10),
+                      fillColor: isMedical
+                          ? Colors.white.withOpacity(0.9)
+                          : colorScheme.onSurface.withAlpha(10),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
+                        borderRadius: BorderRadius.circular(
+                          isMedical ? 15 : 12,
+                        ),
                         borderSide: BorderSide(
-                          color: isMedical 
-                            ? primaryColor.withAlpha(80)
-                            : colorScheme.onSurface.withAlpha(30),
+                          color: isMedical
+                              ? primaryColor.withAlpha(80)
+                              : colorScheme.onSurface.withAlpha(30),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
+                        borderRadius: BorderRadius.circular(
+                          isMedical ? 15 : 12,
+                        ),
                         borderSide: BorderSide(
-                          color: isMedical 
-                            ? primaryColor.withAlpha(80)
-                            : colorScheme.onSurface.withAlpha(30),
+                          color: isMedical
+                              ? primaryColor.withAlpha(80)
+                              : colorScheme.onSurface.withAlpha(30),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
-                        borderSide: BorderSide(
-                          color: primaryColor,
-                          width: 2,
+                        borderRadius: BorderRadius.circular(
+                          isMedical ? 15 : 12,
                         ),
+                        borderSide: BorderSide(color: primaryColor, width: 2),
                       ),
                       suffixIcon: suffixIcon,
                       contentPadding: const EdgeInsets.symmetric(
@@ -317,9 +328,122 @@ class _DynamicFormState extends State<DynamicForm> {
                     ),
                   ),
                 ),
+          if (_isLogin) _buildSocialSection(colorScheme, isMedical),
         ],
       ),
     );
   }
 
+  bool get _isLogin =>
+      widget.submitLabel.toLowerCase().contains('login') ||
+      widget.submitLabel.toLowerCase().contains('sign in');
+
+  Widget _buildSocialSection(ColorScheme colorScheme, bool isMedical) {
+    if (widget.socialLogins.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        const SizedBox(height: 32),
+        // Divider
+        Row(
+          children: [
+            Expanded(
+              child: Divider(color: colorScheme.onSurface.withOpacity(0.1)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "OR CONTINUE WITH",
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: colorScheme.onSurface.withOpacity(0.4),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Divider(color: colorScheme.onSurface.withOpacity(0.1)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        // Social Buttons Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: widget.socialLogins.map((provider) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: _buildSocialIconContainer(
+                provider,
+                colorScheme,
+                isMedical,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialIconContainer(
+    String provider,
+    ColorScheme colorScheme,
+    bool isMedical,
+  ) {
+    IconData icon;
+    switch (provider.toLowerCase()) {
+      case 'google':
+        icon = Icons.g_mobiledata;
+        break;
+      case 'apple':
+        icon = Icons.apple;
+        break;
+      case 'facebook':
+        icon = Icons.facebook;
+        break;
+      default:
+        icon = Icons.login;
+    }
+
+    return InkWell(
+      onTap: () {
+        // Social login simulation
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Connecting to $provider...')));
+      },
+      borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: isMedical
+              ? Colors.white.withOpacity(0.4)
+              : colorScheme.onSurface.withAlpha(10),
+          borderRadius: BorderRadius.circular(isMedical ? 15 : 12),
+          border: Border.all(
+            color: colorScheme.onSurface.withOpacity(0.08),
+            width: 1.5,
+          ),
+          boxShadow: isMedical
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 32,
+            color: colorScheme.onSurface.withOpacity(0.8),
+          ),
+        ),
+      ),
+    );
+  }
 }

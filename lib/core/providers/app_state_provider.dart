@@ -19,8 +19,12 @@ final themeModeProvider = NotifierProvider<ThemeModeNotifier, bool>(
 
 class ActiveTemplateNotifier extends Notifier<String> {
   @override
-  String build() => 'business';
-  void setTemplate(String name) => state = name;
+  String build() => TemplateFactory.activeTemplateId;
+  
+  void setTemplate(String name) {
+    if (TemplateFactory.isWhiteLabel) return; // Prevent switching in White-Label mode
+    state = name;
+  }
 }
 
 final activeTemplateProvider = NotifierProvider<ActiveTemplateNotifier, String>(

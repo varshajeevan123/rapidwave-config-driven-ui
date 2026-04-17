@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../templates/template_factory.dart';
 import 'dynamic_form.dart';
 import '../../templates/business/widgets/business_widgets.dart';
 
@@ -24,9 +25,8 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bgImage =
-        widget.data['bg_image'] ??
-        'assets/images/business_template_icons/bg_image.jpg';
+    final templatePath = 'assets/images/${TemplateFactory.activeTemplateId}';
+    final bgImage = widget.data['bg_image'] ?? '$templatePath/bg_image.jpg';
 
     return Scaffold(
       body: Stack(
@@ -126,7 +126,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
                                           Opacity(
                                                 opacity: 0.07,
                                                 child: Image.asset(
-                                                  'assets/images/business_template_icons/clouds.png',
+                                                  'assets/images/${TemplateFactory.activeTemplateId}/clouds.png',
                                                   width: 250,
                                                 ),
                                               )
@@ -147,7 +147,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
                                           Opacity(
                                                 opacity: 0.05,
                                                 child: Image.asset(
-                                                  'assets/images/business_template_icons/clouds.png',
+                                                  'assets/images/${TemplateFactory.activeTemplateId}/clouds.png',
                                                   width: 200,
                                                 ),
                                               )
@@ -168,7 +168,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
                                           Opacity(
                                                 opacity: 0.03,
                                                 child: Image.asset(
-                                                  'assets/images/business_template_icons/clouds.png',
+                                                  'assets/images/${TemplateFactory.activeTemplateId}/clouds.png',
                                                   width: 150,
                                                 ),
                                               )
@@ -269,7 +269,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
             Opacity(
                   opacity: 0.1,
                   child: Image.asset(
-                    'assets/images/business_template_icons/clouds.png',
+                    'assets/images/${TemplateFactory.activeTemplateId}/clouds.png',
                     width: 300,
                   ),
                 )
@@ -285,7 +285,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
             Opacity(
                   opacity: 0.05,
                   child: Image.asset(
-                    'assets/images/business_template_icons/clouds.png',
+                    'assets/images/${TemplateFactory.activeTemplateId}/clouds.png',
                     width: 200,
                   ),
                 )
@@ -311,7 +311,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
           height: isMobile ? 180 : 320,
           child:
               Image.asset(
-                    'assets/images/business_template_icons/login_ad_image.png',
+                    'assets/images/${TemplateFactory.activeTemplateId}/login_ad_image.png',
                     fit: BoxFit.contain,
                   )
                   .animate(key: ValueKey(isLogin))
@@ -399,6 +399,7 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
             fields: formData['fields'] ?? [],
             submitLabel: formData['submit_label'] ?? 'Login',
             validationMode: formData['validation_mode'] ?? 'onUserInteraction',
+            socialLogins: List<String>.from(formData['social_logins'] ?? []),
             onSubmit: () => context.go('/dashboard'),
             isLiquidButton: true,
           ),
@@ -452,7 +453,11 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
               DynamicForm(
                 fields: formData['fields'] ?? [],
                 submitLabel: formData['submit_label'] ?? 'Register',
-                validationMode: formData['validation_mode'] ?? 'onUserInteraction',
+                validationMode:
+                    formData['validation_mode'] ?? 'onUserInteraction',
+                socialLogins: List<String>.from(
+                  formData['social_logins'] ?? [],
+                ),
                 onSubmit: () {
                   toggleMode();
                   ScaffoldMessenger.of(context).showSnackBar(

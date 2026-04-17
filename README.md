@@ -91,10 +91,59 @@ Forms are handled by the `DynamicForm` widget, which supports:
 
 ---
 
+## 🏗 White-Labeling & Optimized Deployment
+
+RapidWeave features an industrial-grade **White-Label Build System**. This allows you to generate template-specific bundles that physically exclude unused code and assets, minimizing binary size and protecting intellectual property.
+
+### How it Works:
+1. **Code Stripping (Tree-Shaking)**: By using `--dart-define=WHITE_LABEL=true`, the compiler evaluates template selections at compile-time. Any template not selected is unreachable by the compiler and is stripped from the final binary.
+2. **Selective Asset Bundling**: We utilize a workspace-syncing strategy where only the assets relevant to your selected template are synced to the active bundle before the build starts.
+
+### Deployment Commands:
+
+The project includes a professional **Build Manager** utility located in `tool/build_manager.dart`.
+
+#### 1. Generate an Optimized Web Build:
+```bash
+# Optimized for Healthcare
+dart tool/build_manager.dart build healthcare web
+
+# Optimized for Business
+dart tool/build_manager.dart build business web
+```
+
+#### 2. Generate Mobile Builds (Android/iOS):
+```bash
+# Example for Android
+dart tool/build_manager.dart build healthcare apk
+```
+
+#### 3. Manual Preparation (Without Building):
+If you want to sync assets to your local environment for testing a specific template in "Production Mode":
+```bash
+dart tool/build_manager.dart prepare healthcare
+```
+
+---
+
+## 📂 Asset & Config Partitioning
+
+To support optimized builds, assets and configurations are organized into template-specific scopes:
+
+```text
+lib/templates/[id]/assets/
+├── theme.json            # Template design overrides
+├── [screen]_config.json  # Functional UI definitions
+└── icons/                # Template-specific images
+```
+
+Universal resources (like shared logos or system configs) are kept in `assets/common/`. At build time, the selected template's assets are synced to `assets/active/`, which is the only dynamic folder tracked by `pubspec.yaml`.
+
+---
+
 ## 🛠 Tech Stack
 - **Framework:** Flutter 3.x
 - **State Management:** Riverpod 2.x
 - **Animation:** flutter_animate
+- **Build Core:** Simple, robust Dart CLI
 - **Theming:** Material 3 + ThemeExtensions
-- **Routing:** GoRouter
-- **Typography:** Google Fonts

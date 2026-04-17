@@ -112,8 +112,25 @@ class EducationRegistry extends TemplateRegistry {
 }
 
 class TemplateFactory {
-  static TemplateRegistry getRegistry(String templateId) {
-    switch (templateId) {
+  /// The active template ID defined at build time via --dart-define=TEMPLATE=...
+  /// Defaults to 'business' for local development.
+  static const String activeTemplateId = String.fromEnvironment(
+    'TEMPLATE',
+    defaultValue: 'business',
+  );
+
+  /// Whether the app is running in 'White-Label' mode (fixed template).
+  static const bool isWhiteLabel = bool.fromEnvironment(
+    'WHITE_LABEL',
+    defaultValue: false,
+  );
+
+  static TemplateRegistry getRegistry([String? id]) {
+    // In White-Label mode, we ignore the passed ID and only return the compiled template
+    // This allows the compiler to tree-shake all other templates.
+    final targetId = isWhiteLabel ? activeTemplateId : (id ?? activeTemplateId);
+
+    switch (targetId) {
       case 'healthcare':
         return HealthcareRegistry();
       case 'business':
