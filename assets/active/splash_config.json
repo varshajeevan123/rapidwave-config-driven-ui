@@ -1,0 +1,26 @@
+{
+  "screen_id": "splash",
+  "visible": true,
+  "isFeatureTour": true,
+  "data": {
+    "project_name": "RapidWeave",
+    "continue_button_label": "Continue",
+    "onboarding": [
+      {
+        "title": "Smart Solutions for Your Needs",
+        "description": "Your dynamic config-driven platform designed for versatility.",
+        "image": "onboarding_1.png"
+      },
+      {
+        "title": "Boost your efficiency with RapidWeave",
+        "description": "Streamline your workflow with our advanced automation tools.",
+        "image": "onboarding_2.png"
+      },
+      {
+        "title": "Your data, protected and accessible",
+        "description": "Enterprise-grade security meets seamless accessibility.",
+        "image": "onboarding_3.png"
+      }
+    ]
+  }
+}

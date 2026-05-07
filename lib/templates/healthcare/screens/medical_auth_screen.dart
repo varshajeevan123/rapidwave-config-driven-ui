@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../shared/widgets/dynamic_form.dart';
 import '../../../core/theme/template_theme_extension.dart';
 import '../widgets/medical_widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class MedicalAuthScreen extends StatefulWidget {
+class MedicalAuthScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
 
   const MedicalAuthScreen({super.key, required this.data});
 
   @override
-  State<MedicalAuthScreen> createState() => _MedicalAuthScreenState();
+  ConsumerState<MedicalAuthScreen> createState() => _MedicalAuthScreenState();
 }
 
-class _MedicalAuthScreenState extends State<MedicalAuthScreen> {
+class _MedicalAuthScreenState extends ConsumerState<MedicalAuthScreen> {
   bool _isLogin = true;
+  bool _isLoading = false;
 
   void toggleMode() {
     setState(() {
@@ -114,25 +119,60 @@ class _MedicalAuthScreenState extends State<MedicalAuthScreen> {
 
                                   SizedBox(height: isMobile ? 20 : 35),
 
-                                  DynamicForm(
-                                    fields: formData['fields'] ?? [],
-                                    submitLabel:
-                                        formData['submit_label'] ??
-                                        (_isLogin ? 'Login' : 'Sign Up'),
-                                    templateType: 'healthcare',
-                                    onSubmit: () {
-                                      // Simulate logic
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '${_isLogin ? "Login" : "Sign Up"} Successful',
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                    DynamicForm(
+                                      fields: formData['fields'] ?? [],
+                                      submitLabel:
+                                          formData['submit_label'] ??
+                                          (_isLogin ? 'Login' : 'Sign Up'),
+                                      templateType: 'healthcare',
+                                      socialLogins: List<String>.from(
+                                        formData['social_logins'] ?? [],
+                                      ),
+                                      isLoading: _isLoading,
+                                      onSubmit: (values) async {
+                                        setState(() => _isLoading = true);
+                                        try {
+                                          final email = values['email'] ?? '';
+                                          final password = values['password'] ?? '';
+                                          
+                                          if (_isLogin) {
+                                            await ref.read(authServiceProvider).signIn(
+                                                  email: email,
+                                                  password: password,
+                                                );
+                                            if (mounted) context.go('/dashboard');
+                                          } else {
+                                            final name = values['name'];
+                                            await ref.read(authServiceProvider).signUp(
+                                                  email: email,
+                                                  password: password,
+                                                  name: name,
+                                                );
+                                            if (mounted) {
+                                              toggleMode();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Registration successful! Please sign in.')),
+                                              );
+                                            }
+                                          }
+                                          }
+                                        } on AuthException catch (e) {
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('An unexpected error occurred'), backgroundColor: Colors.red),
+                                            );
+                                          }
+                                        } finally {
+                                          if (mounted) setState(() => _isLoading = false);
+                                        }
+                                      },
+                                    ),
 
                                   const SizedBox(height: 15),
 

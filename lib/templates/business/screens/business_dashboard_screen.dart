@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../shared/widgets/dynamic_card.dart';
 import '../../../shared/widgets/dynamic_layout.dart';
 
-class BusinessDashboardScreen extends StatelessWidget {
+class BusinessDashboardScreen extends ConsumerWidget {
   final Map<String, dynamic> data;
 
   const BusinessDashboardScreen({super.key, required this.data});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final metrics = List<Map<String, dynamic>>.from(data['metrics'] ?? []);
 
     return Scaffold(
@@ -31,6 +33,17 @@ class BusinessDashboardScreen extends StatelessWidget {
         ),
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.surface,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: () {
+              ref.read(authServiceProvider).signOut();
+            },
+          ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

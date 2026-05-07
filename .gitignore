@@ -49,3 +49,5 @@ app.*.map.json
 .antigravity/
 .antigravityignore
 
+.env
+pubspec.lock

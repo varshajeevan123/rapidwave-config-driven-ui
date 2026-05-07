@@ -4,6 +4,9 @@ import 'healthcare/screens/healthcare_dashboard_screen.dart';
 import 'business/screens/business_login_screen.dart';
 import 'business/screens/business_dashboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/services/auth_service.dart';
+import '../shared/widgets/splash_page.dart';
 import '../domain/models/theme_config.dart';
 import '../core/theme/template_theme_extension.dart';
 
@@ -13,6 +16,9 @@ class HealthcareRegistry extends TemplateRegistry {
   
   @override
   Widget buildDashboardScreen(Map<String, dynamic> data) => HealthcareDashboardScreen(data: data);
+
+  @override
+  Widget buildSplashScreen(Map<String, dynamic> data) => SplashPage(data: data);
 
   @override
   ThemeConfig getThemeConfig() => ThemeConfig(
@@ -50,6 +56,9 @@ class BusinessRegistry extends TemplateRegistry {
   Widget buildDashboardScreen(Map<String, dynamic> data) => BusinessDashboardScreen(data: data);
 
   @override
+  Widget buildSplashScreen(Map<String, dynamic> data) => SplashPage(data: data);
+
+  @override
   ThemeConfig getThemeConfig() => ThemeConfig(
     lightColors: ThemeColors(
       primary: const Color(0xFF0052CC),
@@ -82,7 +91,27 @@ class EducationRegistry extends TemplateRegistry {
   Widget buildLoginScreen(Map<String, dynamic> data) => const Scaffold(body: Center(child: Text("Education Login Pending")));
   
   @override
-  Widget buildDashboardScreen(Map<String, dynamic> data) => const Scaffold(body: Center(child: Text("Education Dashboard Pending")));
+  Widget buildDashboardScreen(Map<String, dynamic> data) => Consumer(
+    builder: (context, ref, child) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Education Dashboard"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                ref.read(authServiceProvider).signOut();
+              },
+            ),
+          ],
+        ),
+        body: const Center(child: Text("Education Dashboard Pending")),
+      );
+    },
+  );
+
+  @override
+  Widget buildSplashScreen(Map<String, dynamic> data) => SplashPage(data: data);
 
   @override
   ThemeConfig getThemeConfig() => ThemeConfig(

@@ -4,6 +4,7 @@ import '../domain/models/theme_config.dart';
 abstract class TemplateRegistry {
   Widget buildLoginScreen(Map<String, dynamic> data);
   Widget buildDashboardScreen(Map<String, dynamic> data);
+  Widget buildSplashScreen(Map<String, dynamic> data);
 
   // New Theme Methods
   ThemeConfig getThemeConfig();
@@ -16,6 +17,8 @@ abstract class TemplateRegistry {
         return buildLoginScreen(data);
       case 'dashboard':
         return buildDashboardScreen(data);
+      case 'splash':
+        return buildSplashScreen(data);
       default:
         return Center(child: Text('Screen $screenId not supported in this template.'));
     }

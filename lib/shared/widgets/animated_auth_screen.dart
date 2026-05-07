@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/services/auth_service.dart';
 import '../../templates/template_factory.dart';
 import 'dynamic_form.dart';
 import '../../templates/business/widgets/business_widgets.dart';
 
-class AnimatedAuthScreen extends StatefulWidget {
+class AnimatedAuthScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
 
   const AnimatedAuthScreen({super.key, required this.data});
 
   @override
-  State<AnimatedAuthScreen> createState() => _AnimatedAuthScreenState();
+  ConsumerState<AnimatedAuthScreen> createState() => _AnimatedAuthScreenState();
 }
 
-class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
+class _AnimatedAuthScreenState extends ConsumerState<AnimatedAuthScreen> {
   bool isLoginMode = true;
+  bool isLoading = false;
 
   void toggleMode() {
     setState(() {
@@ -400,7 +403,33 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
             submitLabel: formData['submit_label'] ?? 'Login',
             validationMode: formData['validation_mode'] ?? 'onUserInteraction',
             socialLogins: List<String>.from(formData['social_logins'] ?? []),
-            onSubmit: () => context.go('/dashboard'),
+            isLoading: isLoading,
+            onSubmit: (values) async {
+              setState(() => isLoading = true);
+              try {
+                final email = values['email'] ?? '';
+                final password = values['password'] ?? '';
+                await ref.read(authServiceProvider).signIn(
+                      email: email,
+                      password: password,
+                    );
+                if (mounted) context.go('/dashboard');
+              } on AuthException catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('An unexpected error occurred'), backgroundColor: Colors.red),
+                  );
+                }
+              } finally {
+                if (mounted) setState(() => isLoading = false);
+              }
+            },
             isLiquidButton: true,
           ),
         ),
@@ -458,11 +487,40 @@ class _AnimatedAuthScreenState extends State<AnimatedAuthScreen> {
                 socialLogins: List<String>.from(
                   formData['social_logins'] ?? [],
                 ),
-                onSubmit: () {
-                  toggleMode();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Registration successful!')),
-                  );
+                isLoading: isLoading,
+                onSubmit: (values) async {
+                  setState(() => isLoading = true);
+                  try {
+                    final email = values['email'] ?? '';
+                    final password = values['password'] ?? '';
+                    final name = values['name'];
+                    
+                    await ref.read(authServiceProvider).signUp(
+                          email: email,
+                          password: password,
+                          name: name,
+                        );
+                    if (mounted) {
+                      toggleMode();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Registration successful! Please check your email or sign in.')),
+                      );
+                    }
+                  } on AuthException catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('An unexpected error occurred'), backgroundColor: Colors.red),
+                      );
+                    }
+                  } finally {
+                    if (mounted) setState(() => isLoading = false);
+                  }
                 },
                 isLiquidButton: true,
               ),

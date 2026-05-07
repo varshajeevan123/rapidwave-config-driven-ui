@@ -4,8 +4,9 @@ import '../../templates/business/widgets/business_widgets.dart';
 class DynamicForm extends StatefulWidget {
   final List<dynamic> fields;
   final String submitLabel;
-  final VoidCallback onSubmit;
+  final Function(Map<String, String>) onSubmit;
   final bool isLiquidButton;
+  final bool isLoading;
 
   const DynamicForm({
     super.key,
@@ -13,6 +14,7 @@ class DynamicForm extends StatefulWidget {
     required this.onSubmit,
     this.submitLabel = 'Submit',
     this.isLiquidButton = false,
+    this.isLoading = false,
     this.validationMode = 'onUserInteraction',
     this.templateType = 'business',
     this.socialLogins = const [],
@@ -50,6 +52,10 @@ class _DynamicFormState extends State<DynamicForm> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  Map<String, String> _collectValues() {
+    return _controllers.map((key, controller) => MapEntry(key, controller.text));
   }
 
   FormFieldValidator<String> _buildValidator(Map<String, dynamic> field) {
@@ -294,19 +300,19 @@ class _DynamicFormState extends State<DynamicForm> {
           const SizedBox(height: 16),
           widget.isLiquidButton
               ? BusinessLiquidButton(
-                  label: widget.submitLabel,
-                  onTap: () {
+                  label: widget.isLoading ? 'Processing...' : widget.submitLabel,
+                  onTap: widget.isLoading ? () {} : () {
                     if (_formKey.currentState!.validate()) {
-                      widget.onSubmit();
+                      widget.onSubmit(_collectValues());
                     }
                   },
                   isLarge: true,
                   primaryColor: primaryColor,
                 )
               : ElevatedButton(
-                  onPressed: () {
+                  onPressed: widget.isLoading ? null : () {
                     if (_formKey.currentState!.validate()) {
-                      widget.onSubmit();
+                      widget.onSubmit(_collectValues());
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -319,14 +325,23 @@ class _DynamicFormState extends State<DynamicForm> {
                     backgroundColor: primaryColor,
                     foregroundColor: colorScheme.onPrimary,
                   ),
-                  child: Text(
-                    widget.submitLabel.toUpperCase(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: widget.isLoading
+                      ? SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: colorScheme.onPrimary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          widget.submitLabel.toUpperCase(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            fontSize: 16,
+                          ),
+                        ),
                 ),
           if (_isLogin) _buildSocialSection(colorScheme, isMedical),
         ],

@@ -40,6 +40,8 @@ dependencies:
   google_fonts: ^6.3.2
   flutter_animate: ^4.5.2
   json_annotation: ^4.9.0
+  supabase_flutter: ^2.12.4
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - .env
     - assets/configs/
     - assets/common/
     - assets/active/

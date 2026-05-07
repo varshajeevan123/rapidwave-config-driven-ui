@@ -32,14 +32,26 @@ class ConfigRepository {
       final templateAssetPath = 'assets/images/$templateId';
       
       final data = map['data'] as Map<String, dynamic>;
-      data.forEach((key, value) {
-        if (value is String && _isAssetKey(key)) {
-          data[key] = '$templateAssetPath/$value';
-        }
-      });
+      _resolveAssets(data, templateAssetPath);
     }
 
     return ScreenConfig.fromJson(map);
+  }
+
+  void _resolveAssets(dynamic data, String templateAssetPath) {
+    if (data is Map<String, dynamic>) {
+      data.forEach((key, value) {
+        if (value is String && _isAssetKey(key)) {
+          data[key] = '$templateAssetPath/$value';
+        } else if (value is Map<String, dynamic> || value is List) {
+          _resolveAssets(value, templateAssetPath);
+        }
+      });
+    } else if (data is List) {
+      for (var item in data) {
+        _resolveAssets(item, templateAssetPath);
+      }
+    }
   }
 
   bool _isAssetKey(String key) {
